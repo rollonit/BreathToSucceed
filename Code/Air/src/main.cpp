@@ -37,7 +37,7 @@ uint32_t getAbsoluteHumidity(float temperature, float humidity) {
     return absoluteHumidityScaled;
 }
 
-void setup_wifi() {
+void setupWifi() {
     delay(10);
     Serial.println();
     Serial.print("Connecting to ");
@@ -85,6 +85,15 @@ void publishSerialData(char *serialData){
   client.publish(mqtt_topic, serialData);
 }
 
+int* parseResult(uint8_t* data) {
+    int value[7];
+
+    for (int i = 1; i < 8; i++) {
+        value[i-1] = (uint16_t) data[i * 2] << 8 | data[i * 2 + 1];
+    }
+    return value;
+}
+
 void setup() {
   Serial.begin(115200);
   Serial.setTimeout(500);
@@ -100,7 +109,7 @@ void setup() {
   }
   
   // Set time out for 
-  setup_wifi();
+  setupWifi();
   client.setServer(mqtt_server, mqtt_port);
   reconnect();
 
@@ -142,10 +151,15 @@ void loop() {
   if (hm.read_sensor_value(buf, 29)) {
         Serial.println("HM330X read result failed!!");
   }
-  char buff[100];
-  memset(buff, 0, 100);
-  itoa(buf, buff, 10);
-  Serial.println(buff);
+
+  int* pmRaw = parseResult(buf); 
+
+  data["PM"]["SPM1.0"] = pmRaw[1];
+  data["PM"]["SPM2.5"] = pmRaw[2];
+  data["PM"]["SPM10"] = pmRaw[3];
+  data["PM"]["AE1.0"] = pmRaw[4];
+  data["PM"]["AE2.5"] = pmRaw[5];
+  data["PM"]["AE10"] = pmRaw[6];
 
   //Publishing data to MQTT broker.
   char mun[501];
