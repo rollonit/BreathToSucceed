@@ -2,6 +2,8 @@
 #include <WiFi.h>
 #include <PubSubClient.h>
 #include "Adafruit_SGP30.h"
+#include <stdlib.h>
+
 
 Adafruit_SGP30 sgp;
 
@@ -76,34 +78,9 @@ void callback(char* topic, byte *payload, unsigned int length) {
 }
 
 void setup() {
-  Serial.begin(115200);
-  Serial.setTimeout(500);// Set time out for 
-  setup_wifi();
-  client.setServer(mqtt_server, mqtt_port);
-  client.setCallback(callback);
-  reconnect();
-}
 
-void publishSerialData(char *serialData){
-  if (!client.connected()) {
-    reconnect();
-  }
-  client.publish("air/clean", serialData);
-}
-void loop() {
-   client.loop();
-   if (Serial.available() > 0) {
-     char mun[501];
-     memset(mun,0, 501);
-     Serial.readBytesUntil( '\n',mun,500);
-     publishSerialData(mun);
-   }
- }
-
-//>>>>>>>>>>>>>>>>>>>>>>
-
-void setupp() {
-  Serial.begin(115200);
+    Serial.begin(115200);
+    Serial.setTimeout(500);
   while (!Serial) { delay(10); } // Wait for serial console to open!
 
   Serial.println("SGP30 test");
@@ -116,13 +93,34 @@ void setupp() {
   Serial.print(sgp.serialnumber[0], HEX);
   Serial.print(sgp.serialnumber[1], HEX);
   Serial.println(sgp.serialnumber[2], HEX);
-
-  // If you have a baseline measurement from before you can assign it to start, to 'self-calibrate'
-  //sgp.setIAQBaseline(0x8E68, 0x8F41);  // Will vary for each sensor!
+  
+  // Set time out for 
+  setup_wifi();
+  client.setServer(mqtt_server, mqtt_port);
+  client.setCallback(callback);
+  reconnect();
 }
 
+void publishSerialData(char *serialData){
+  if (!client.connected()) {
+    reconnect();
+  }
+  client.publish("air/qual", serialData);
+}
+void looop() {
+   client.loop();
+   if (Serial.available() > 0) {
+     char mun[501];
+     memset(mun,0, 501);
+     Serial.readBytesUntil( '\n',mun,500);
+     publishSerialData(mun);
+   }
+ }
+
+//>>>>>>>>>>>>>>>>>>>>>>
+
 int counter = 0;
-void loopp() {
+void loop() {
   // If you have a temperature / humidity sensor, you can set the absolute humidity to enable the humditiy compensation for the air quality signals
   //float temperature = 22.1; // [°C]
   //float humidity = 45.2; // [%RH]
@@ -132,6 +130,11 @@ void loopp() {
     Serial.println("Measurement failed");
     return;
   }
+  client.loop();
+  char mun[501];
+  memset(mun,0, 501);
+  itoa(sgp.TVOC, mun, 10);
+  publishSerialData(mun);
   Serial.print("TVOC "); Serial.print(sgp.TVOC); Serial.print(" ppb\t");
   Serial.print("eCO2 "); Serial.print(sgp.eCO2); Serial.println(" ppm");
 
