@@ -85,13 +85,11 @@ void publishSerialData(char *serialData){
   client.publish(mqtt_topic, serialData);
 }
 
-int* parseResult(uint8_t* data) {
-    int value[7];
-
-    for (int i = 1; i < 8; i++) {
-        value[i-1] = (uint16_t) data[i * 2] << 8 | data[i * 2 + 1];
+int* parseResult(uint8_t* data, int* toParse) {
+    for(int i = 1; i < 8; i++) {
+        toParse[i-1] = (uint16_t) data[i * 2] << 8 | data[i * 2 + 1];
     }
-    return value;
+    return toParse;
 }
 
 void setup() {
@@ -128,7 +126,7 @@ void loop() {
 
   data["temperature"] = temperature;
   data["humidity"] = humidity;
-
+  //TVOC and eCO2 read and add 
   if (! sgp.IAQmeasure()) {
     Serial.println("Measurement failed");
     return;
@@ -139,6 +137,7 @@ void loop() {
   //Serial.print("TVOC "); Serial.print(sgp.TVOC); Serial.print(" ppb\t");
   //Serial.print("eCO2 "); Serial.print(sgp.eCO2); Serial.println(" ppm");
 
+  //Raw H2 and ethanol concentration read and add to JSON.
   if (! sgp.IAQmeasureRaw()) {
     Serial.println("Raw Measurement failed");
     return;
@@ -148,11 +147,14 @@ void loop() {
   //Serial.print("Raw H2 "); Serial.print(sgp.rawH2); Serial.print(" \t");
   //Serial.print("Raw Ethanol "); Serial.print(sgp.rawEthanol); Serial.println("");
 
+
+  //HM3301 data read, parse and add to JSON
   if (hm.read_sensor_value(buf, 29)) {
         Serial.println("HM330X read result failed!!");
   }
 
-  int* pmRaw = parseResult(buf); 
+  int pmRaw[7];
+  parseResult(buf, pmRaw); 
 
   data["PM"]["SPM1.0"] = pmRaw[1];
   data["PM"]["SPM2.5"] = pmRaw[2];
