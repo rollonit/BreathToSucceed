@@ -7,6 +7,7 @@ import json
 clientID = "PiBase"
 brokerAddress = "localhost"  # TODO CHANGE THIS
 clientTopic = "air/qual"
+
 db = None
 dbFile = Path(__file__).parent / "../db/airData.db"
 createTableSQL = """ create table if not exists airQuality (
@@ -58,9 +59,7 @@ def insertAirData(connection, dataAsTask):
 
 
 def dataCallback(client, userData, message):
-    # print(message.payload.decode("utf-8"))
     jsonData = json.loads(message.payload.decode('utf-8'))
-    # print(jsonData)
     sqlData = (jsonData['temperature'], jsonData['humidity'], jsonData['TVOC'], jsonData['eCO2'], jsonData['rawH2'], jsonData['rawEthanol'], jsonData['PM']
                ['SPM1.0'], jsonData['PM']['SPM2.5'], jsonData['PM']['SPM10'], jsonData['PM']['AE1.0'], jsonData['PM']['AE2.5'], jsonData['PM']['AE10'])
     insertAirData(db, sqlData)
