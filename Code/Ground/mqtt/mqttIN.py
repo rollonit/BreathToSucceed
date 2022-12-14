@@ -3,6 +3,7 @@ import sqlite3
 from sqlite3 import Error
 from pathlib import Path
 import json
+import time
 
 clientID = "PiBase"
 brokerAddress = "localhost"  # TODO CHANGE THIS
@@ -48,7 +49,7 @@ def createTable(connection, schema):
 def insertAirData(connection, dataAsTask):
     try:
         sql = """INSERT INTO airQuality(timecode, temperature, humidity, TVOC, eCO2, rawH2, rawEthanol, spm1_0, spm2_5, spm10, ae1_0, ae2_5, ae10)
-                    VALUES(unixepoch('now'),?,?,?,?,?,?,?,?,?,?,?,?)"""
+                    VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)"""
         cur = connection.cursor()
         print(dataAsTask)
         cur.execute(sql, dataAsTask)
@@ -60,7 +61,8 @@ def insertAirData(connection, dataAsTask):
 
 def dataCallback(client, userData, message):
     jsonData = json.loads(message.payload.decode('utf-8'))
-    sqlData = (jsonData['temperature'], jsonData['humidity'], jsonData['TVOC'], jsonData['eCO2'], jsonData['rawH2'], jsonData['rawEthanol'], jsonData['PM']
+    # print(jsonData)
+    sqlData = (int(time.time()), jsonData['temperature'], jsonData['humidity'], jsonData['TVOC'], jsonData['eCO2'], jsonData['rawH2'], jsonData['rawEthanol'], jsonData['PM']
                ['SPM1.0'], jsonData['PM']['SPM2.5'], jsonData['PM']['SPM10'], jsonData['PM']['AE1.0'], jsonData['PM']['AE2.5'], jsonData['PM']['AE10'])
     insertAirData(db, sqlData)
 
