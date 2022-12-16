@@ -16,7 +16,7 @@ app.use(express.static('public'));
 
 app.use(express.json());
 
-/* //Handles API requests here when url is /data
+//Handles API requests here when url is /data
 app.get('/data', (req, res) => {
     exporter.json({ table: 'airQuality' }, (err, json) => {
         if (err) {
@@ -25,7 +25,7 @@ app.get('/data', (req, res) => {
         //Output the parsed JSON from SQL.
         res.status(200).json(JSON.parse(json));
     });
-}); */
+});
 
 //Handles API requests here when url is /data
 app.post('/data', (req, res) => {
