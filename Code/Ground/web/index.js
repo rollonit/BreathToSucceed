@@ -22,7 +22,7 @@ app.get('/data', (req, res) => {
     });
 });
 
-//Handles API requests here when url is /data
+//Handles API requests here when url is /latest
 app.get('/latest', (req, res) => {
     exporter.json('SELECT * FROM airQuality ORDER BY timecode DESC LIMIT 1;', (err, json) => {
         if (err) {
@@ -33,7 +33,7 @@ app.get('/latest', (req, res) => {
     });
 });
 
-//Handles API requests here when url is /data
+//Handles API requests here when url is /data and timecode is defined
 app.post('/data', (req, res) => {
     if (Number.isInteger(req.body.timeStart) && Number.isInteger(req.body.timeEnd))
         exporter.json({ table: 'airQuality', where: `timecode > ${req.body.timeStart}`, where: `timecode < ${req.body.timeEnd}` }, (err, json) => {
