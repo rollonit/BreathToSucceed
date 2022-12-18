@@ -9,43 +9,41 @@ idealValues = '[{"temperatureMin":18,"temperatureMax":22,"humidityMin":40, "humi
 idealValues = JSON.parse(idealValues)
 
 
-//im file hesch denn anstatt d 'onload funktion das grad ide Response ihne chasch eifach "data" mmit de response variable ersetze
-// je nach dem mümmers json no umformatiere aber so vill theorie chani au ned zum das eif sege chönne hahaah
 window.onload = function () {
-
+    
     fetch('http://localhost:8000/data', {
-        method: 'POST',
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ "timeStart": 1671009438, "timeEnd": 1671009540 })
-    })
-        .then(response => response.json())
-        .then(response => buildTable(JSON.stringify(response)))
+    method: 'POST',
+    headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ "timeStart": 1671009438, "timeEnd": 1671009540})
+})
+.then(response => response.json())
+.then(response => buildTable(JSON.stringify(response)))
+    
 
-
-
+    
 
 }
 
-function buildTable(data) {
+function buildTable(data){
     var obj = JSON.parse(data)
     tableHead = "<thead><tr>"
     tableBody = "<tbody>"
 
     //here we are going through all the datasets one by one
-    for (let i = 0; i < obj.length; i++) {
+    for(let i = 0; i < obj.length; i++) {
         //m(measurement) equals one measurement with all the parameters
         let m = obj[i];
 
 
         //goes through all keys and adds a table header the first time
         tableHead += "<th>" + formatTimecode(obj[i]["timecode"]) + "</th><th>Value</th><th>Minimal Value</th><th>Maximal Value</th><th>Instruction</th>"
+        
 
-
-        for (key in obj[i]) {
-            if (key != "timecode") {
+        for(key in obj[i]){
+            if(key != "timecode"){
                 //access to the retrieved data and compare with ideal values
                 displayIdealValues(obj[i], key);
             }
@@ -63,41 +61,41 @@ function buildTable(data) {
 
 }
 
-function formatTimecode(timecode) {
+function formatTimecode(timecode){
     var a = new Date(timecode * 1000);
-    var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     var year = a.getFullYear();
     var month = months[a.getMonth()];
     var date = a.getDate();
     var hour = a.getHours();
     var min = a.getMinutes();
     var sec = a.getSeconds();
-    var time = date + ' ' + month + ' ' + year + ' ' + hour + ':' + min + ':' + sec;
+    var time = date + ' ' + month + ' ' + year + ' ' + hour + ':' + min + ':' + sec ;
     return time;
 }
 
-function displayIdealValues(obj, key) {
-    minVal = idealValues[0][key + "Min"];
-    maxVal = idealValues[0][key + "Max"];
+function displayIdealValues(obj, key){
+    minVal = idealValues[0][key+"Min"];
+    maxVal = idealValues[0][key+"Max"];
     var instruction = "Test";
 
-    if (obj[key] <= minVal || obj[key] >= maxVal) {
+    if(obj[key] <= minVal || obj[key] >= maxVal){
         console.log(idealValues[0]["temperatureMin"] + " - " + obj["temperature"]);
         tableBody += "<tr class='danger'>"
-    } else {
+    }else{
 
         tableBody += "<tr class='success'>"
     }
-    tableBody += "<th>" + key + "</th>"
+    tableBody += "<th>"+key+"</th>"
 
-    if (key == "temperature" || key == "humidity") {
+    if(key == "temperature" || key == "humidity"){
         tableBody += "<td>" + Number(obj[key]).toFixed(2) + "</td>"
-    } else {
+    }else{
         tableBody += "<td>" + obj[key] + "</td>"
     }
 
-    tableBody += "<td>" + minVal + "</td><td>" + maxVal + "</td><td>" + instruction + "</td>"
-
+    tableBody += "<td>"+ minVal + "</td><td>"+ maxVal + "</td><td>"+ instruction + "</td>"
+    
 }
 
 /*function createAccurateInstruction(obj, key){
