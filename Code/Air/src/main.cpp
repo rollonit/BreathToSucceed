@@ -187,5 +187,5 @@ void loop() {
   serializeJson(jsonData, mqttData);
   publishSerialData(mqttData);
 
-  delay(1000);
+  delay(30000);
 }
